@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "modern-normalize";
 import { searchImages } from "../../api/searchImages";
 import SearchBar from "../SearchBar/SearchBar";
@@ -13,7 +13,7 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  async function handleSearch(query, pageNum) {
+  async function handleSearch(query, pageNum = 1) {
     try {
       setImages([]);
       setError(false);
@@ -21,7 +21,7 @@ const App = () => {
       const data = await searchImages(query, pageNum);
       setImages(data);
 
-      const normalizeData = data.map(({ description, id, urls }) => {
+      const normalizeData = data.results.map(({ description, id, urls }) => {
         return {
           alt: description,
           id,
@@ -42,13 +42,20 @@ const App = () => {
     }
   }
 
+  useEffect(() => {
+    async function loadData() {
+      const results = await searchImages(query, (pageNum = 1));
+      setImages(results);
+    }
+    loadData();
+  }, []);
+
   return (
     <div>
       <SearchBar onSubmit={handleSearch} />
       {loading && <p>Loading...</p>}
       {error && <ErrorMessage />}
       {images.length > 0 && <ImageGallery items={images} />}
-      {}
     </div>
   );
 };
