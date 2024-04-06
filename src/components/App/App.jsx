@@ -1,54 +1,56 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import "modern-normalize";
-import userData from "./users.json";
-import css from "../App/App.module.css";
-import SearchBox from "../SearchBox/SearchBox";
-import ContactForm from "../ContactForm/ContactForm";
-import ContactList from "../ContactList/ContactList";
-import { nanoid } from "nanoid";
+import { searchImages } from "../../api/searchImages";
+import SearchBar from "../SearchBar/SearchBar";
+import ImageGallery from "../ImageGallery/ImageGallery";
+import ErrorMessage from "../ErrorMessage/ErrorMessage";
+import ImageModal from "../ImageModal/ImageModal";
+import Loader from "../Loader/Loader";
+import LoadMoreBtn from "../LoadMoreBtn/LoadMoreBtn";
 
 const App = () => {
-  const [contacts, setContacts] = useState(
-    () => JSON.parse(window.localStorage.getItem("contacts")) || userData
-  );
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
-  const [searchValue, setSearchValue] = useState("");
+  async function handleSearch(query, pageNum) {
+    try {
+      setImages([]);
+      setError(false);
+      setLoading(true);
+      const data = await searchImages(query, pageNum);
+      setImages(data);
 
-  useEffect(() => {
-    window.localStorage.setItem("contacts", JSON.stringify(contacts));
-  }, [contacts]);
+      const normalizeData = data.map(({ description, id, urls }) => {
+        return {
+          alt: description,
+          id,
+          small: urls.small,
+          regular: urls.regular,
+        };
+      });
 
-  const filteredContacts = contacts.filter((contact) =>
-    contact.name.toLowerCase().includes(searchValue.toLowerCase())
-  );
-
-  const addContact = (newTask) => {
-    const newContact = {
-      ...newTask,
-      id: nanoid(),
-    };
-    setContacts((prevContacts) => {
-      return [...prevContacts, newContact];
-    });
-  };
-
-  const deleteContact = (taskId) => {
-    setContacts((prevContacts) => {
-      return prevContacts.filter((contact) => contact.id !== taskId);
-    });
-  };
-
-  const handleSearch = (evt) => {
-    setSearchValue(evt.target.value);
-  };
+      if (pageNum === 1) {
+        setImages(normalizeData);
+      } else {
+        setImages((prevImages) => [...prevImages, ...normalizeData]);
+      }
+    } catch (error) {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <div className={css.container}>
-      <h1>Phonebook</h1>
-      <ContactForm onAdd={addContact} />
-      <SearchBox searchValue={searchValue} onChange={handleSearch} />
-      <ContactList users={filteredContacts} onDelete={deleteContact} />
+    <div>
+      <SearchBar onSubmit={handleSearch} />
+      {loading && <p>Loading...</p>}
+      {error && <ErrorMessage />}
+      {images.length > 0 && <ImageGallery items={images} />}
+      {}
     </div>
   );
 };
+
 export default App;
