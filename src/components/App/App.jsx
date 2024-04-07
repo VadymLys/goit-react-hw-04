@@ -21,8 +21,9 @@ const App = () => {
       setImages([]);
       setError(false);
       setLoading(true);
-      const data = await searchImages(query, pageNum);
-      setImages(data);
+      setPageNum(1);
+      setQuery(query);
+      setImages([]);
 
       const normalizeData = data.results.map(({ description, id, urls }) => {
         return {
@@ -46,8 +47,12 @@ const App = () => {
   }
 
   useEffect(() => {
+    async function loadData() {
+      const data = await searchImages(query, pageNum);
+    }
+
     if (query !== "") {
-      handleSearch(query, 1);
+      searchImages(query, 1);
       setPageNum(1);
       setImages([]);
       setHasMoreImages(true);
@@ -55,13 +60,13 @@ const App = () => {
     if (pageNum > 1) {
       handleSearch(query, pageNum);
     }
+
+    loadData();
   }, [query, pageNum]);
 
   const loadMore = () => {
     setPageNum(pageNum + 1);
   };
-
-  console.log(hasMoreImages);
 
   return (
     <div>
