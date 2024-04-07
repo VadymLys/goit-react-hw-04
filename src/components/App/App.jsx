@@ -12,6 +12,9 @@ const App = () => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [pageNum, setPageNum] = useState(1);
+  const [query, setQuery] = useState("");
+  const [hasMoreImages, setHasMoreImages] = useState(false);
 
   async function handleSearch(query, pageNum = 1) {
     try {
@@ -43,19 +46,32 @@ const App = () => {
   }
 
   useEffect(() => {
-    async function loadData() {
-      const results = await searchImages(query, (pageNum = 1));
-      setImages(results);
+    if (query !== "") {
+      handleSearch(query, 1);
+      setPageNum(1);
+      setImages([]);
+      setHasMoreImages(true);
     }
-    loadData();
-  }, []);
+    if (pageNum > 1) {
+      handleSearch(query, pageNum);
+    }
+  }, [query, pageNum]);
+
+  const loadMore = () => {
+    setPageNum(pageNum + 1);
+  };
+
+  console.log(hasMoreImages);
 
   return (
     <div>
       <SearchBar onSubmit={handleSearch} />
-      {loading && <p>Loading...</p>}
+      {loading && <Loader />}
       {error && <ErrorMessage />}
       {images.length > 0 && <ImageGallery items={images} />}
+      {hasMoreImages && images.length > 0 && (
+        <LoadMoreBtn onClick={loadMore} page={pageNum} items={images} />
+      )}
     </div>
   );
 };
