@@ -18,49 +18,45 @@ const App = () => {
   const [clickImage, setClickImage] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
 
-  async function handleSearch(query, pageNum = 1) {
-    try {
-      setError(false);
+  async function handleSearch(query) {
+    setError(false);
 
-      setLoading(true);
+    setImages([]);
 
-      setImages([]);
+    setPageNum(1);
 
-      setPageNum(1);
-
-      setQuery(query);
-
-      const data = await searchImages(query, pageNum);
-
-      const normalizeData = data.results.map(({ description, id, urls }) => {
-        return {
-          alt: description,
-          id,
-          small: urls.small,
-          regular: urls.regular,
-        };
-      });
-
-      if (pageNum === 1) {
-        setImages(normalizeData);
-      } else {
-        setImages((prevImages) => [...prevImages, ...normalizeData]);
-      }
-      if (data.results.length === 0) {
-        setHasMoreImages(false);
-      }
-
-      setHasMoreImages(data.total_pages > pageNum);
-    } catch (error) {
-      setError(true);
-    } finally {
-      setLoading(false);
-    }
+    setQuery(query);
   }
 
   useEffect(() => {
     async function loadData() {
-      searchImages(query, pageNum);
+      try {
+        const data = await searchImages(query, pageNum);
+
+        const normalizeData = data.results.map(({ description, id, urls }) => {
+          return {
+            alt: description,
+            id,
+            small: urls.small,
+            regular: urls.regular,
+          };
+        });
+
+        if (pageNum === 1) {
+          setImages(normalizeData);
+        } else {
+          setImages((prevImages) => [...prevImages, ...normalizeData]);
+        }
+        if (data.results.length === 0) {
+          setHasMoreImages(false);
+        }
+
+        setHasMoreImages(data.total_pages > pageNum);
+      } catch (error) {
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
     }
 
     if (query !== "") {
