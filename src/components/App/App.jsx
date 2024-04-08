@@ -32,7 +32,6 @@ const App = () => {
     if (!query) return;
     async function loadData() {
       try {
-        setLoading(true);
         const data = await searchImages(query, pageNum);
 
         const normalizeData = data.results.map(({ description, id, urls }) => {
@@ -44,32 +43,18 @@ const App = () => {
           };
         });
 
-        if (pageNum === 1) {
-          setImages(normalizeData);
-        } else {
-          setImages((prevImages) => [...prevImages, ...normalizeData]);
-        }
+        setImages((prevImages) => [...prevImages, ...normalizeData]);
+
         if (data.results.length === 0) {
           setHasMoreImages(false);
         }
 
-        setHasMoreImages(data.total_pages > pageNum);
+        setHasMoreImages(data.total_pages !== pageNum);
       } catch (error) {
         setError(true);
       } finally {
         setLoading(false);
       }
-    }
-
-    if (query !== "") {
-      handleSearch(query, 1);
-      setPageNum(1);
-      setImages([]);
-      setHasMoreImages(true);
-    }
-
-    if (pageNum > 1) {
-      handleSearch(query, pageNum);
     }
 
     loadData();

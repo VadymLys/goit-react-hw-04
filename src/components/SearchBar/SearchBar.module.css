@@ -33,6 +33,10 @@
   outline: none;
 }
 
+input:focus {
+  background-color: Lavender;
+}
+
 .btn {
   border: none;
   background-color: white;
