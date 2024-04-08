@@ -29,8 +29,10 @@ const App = () => {
   }
 
   useEffect(() => {
+    if (!query) return;
     async function loadData() {
       try {
+        setLoading(true);
         const data = await searchImages(query, pageNum);
 
         const normalizeData = data.results.map(({ description, id, urls }) => {
