@@ -15,15 +15,22 @@ const App = () => {
   const [pageNum, setPageNum] = useState(1);
   const [query, setQuery] = useState("");
   const [hasMoreImages, setHasMoreImages] = useState(false);
+  const [clickImage, setClickImage] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
 
   async function handleSearch(query, pageNum = 1) {
     try {
-      setImages([]);
       setError(false);
+
       setLoading(true);
-      setPageNum(1);
-      setQuery(query);
+
       setImages([]);
+
+      setPageNum(1);
+
+      setQuery(query);
+
+      const data = await searchImages(query, pageNum);
 
       const normalizeData = data.results.map(({ description, id, urls }) => {
         return {
@@ -39,6 +46,11 @@ const App = () => {
       } else {
         setImages((prevImages) => [...prevImages, ...normalizeData]);
       }
+      if (data.results.length === 0) {
+        setHasMoreImages(false);
+      }
+
+      setHasMoreImages(data.total_pages > pageNum);
     } catch (error) {
       setError(true);
     } finally {
@@ -48,15 +60,16 @@ const App = () => {
 
   useEffect(() => {
     async function loadData() {
-      const data = await searchImages(query, pageNum);
+      searchImages(query, pageNum);
     }
 
     if (query !== "") {
-      searchImages(query, 1);
+      handleSearch(query, 1);
       setPageNum(1);
       setImages([]);
       setHasMoreImages(true);
     }
+
     if (pageNum > 1) {
       handleSearch(query, pageNum);
     }
@@ -68,14 +81,27 @@ const App = () => {
     setPageNum(pageNum + 1);
   };
 
+  const open = (image) => {
+    setIsOpen(true);
+    setClickImage(image);
+  };
+
+  const close = () => {
+    setIsOpen(false);
+    setClickImage(null);
+  };
+
   return (
     <div>
       <SearchBar onSubmit={handleSearch} />
       {loading && <Loader />}
       {error && <ErrorMessage />}
-      {images.length > 0 && <ImageGallery items={images} />}
+      {images.length > 0 && <ImageGallery items={images} onClick={open} />}
       {hasMoreImages && images.length > 0 && (
         <LoadMoreBtn onClick={loadMore} page={pageNum} items={images} />
+      )}
+      {clickImage && (
+        <ImageModal images={clickImage} open={isOpen} close={close} />
       )}
     </div>
   );

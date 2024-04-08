@@ -23,7 +23,7 @@ async function searchImages(query, pageNum) {
     return response.data;
   } catch (error) {
     console.error("Error fetching images:", error);
-    return null;
+    return error.status;
   }
 }
 export { searchImages };
