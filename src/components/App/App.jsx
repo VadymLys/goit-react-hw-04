@@ -19,6 +19,8 @@ const App = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   async function handleSearch(query) {
+    setLoading(true);
+
     setError(false);
 
     setImages([]);
