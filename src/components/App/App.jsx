@@ -56,6 +56,7 @@ const App = () => {
         setError(true);
       } finally {
         setLoading(false);
+        setError(false);
       }
     }
 
@@ -63,6 +64,7 @@ const App = () => {
   }, [query, pageNum]);
 
   const loadMore = () => {
+    setLoading(true);
     setPageNum(pageNum + 1);
   };
 
